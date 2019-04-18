@@ -1,0 +1,9 @@
+[package]
+name = "insa-interpreter"
+version = "0.1.0"
+authors = ["Kanabenki <18357657+Kanabenki@users.noreply.github.com>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4.6"
+env_logger = "0.6.1"
