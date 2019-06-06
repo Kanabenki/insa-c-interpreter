@@ -1,16 +1,17 @@
 use std::num::Wrapping as Wr;
 use std::fs::File;
 use std::path::Path;
-use std::io::BufReader;
+use std::io::{BufReader, stdout};
 use std::env::args;
 use std::io::prelude::*;
 use log::{info, debug, error};
 use std::fmt;
 use env_logger;
 
-const OPCODE_TABLE: [fn(&mut State, a: u8, b: u8, c: u8) -> (); 16] = [
+const OPCODE_TABLE: [fn(&mut State, a: u8, b: u8, c: u8) -> (); 23] = [
     State::nop, State::add, State::mul, State::sou, State::div, State::cop, State::afc, State::load,
-    State::store, State::equ, State::inf, State::infe, State::sup, State::supe, State::jmp, State::jmpc
+    State::store, State::equ, State::nequ, State::inf, State::infe, State::sup, State::supe, State::jmp, 
+    State::jmpc, State::jr,  State::jrc, State::and, State::or, State::xor, State::not
     ];
 
 struct State {
@@ -22,7 +23,7 @@ struct State {
 
 impl fmt::Debug for State {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "State {{ pc: {:?}, regs: {:?}}}", self.pc, &self.regs)
+        write!(f, "State {{ pc: {:?}, regs: {:?}}}", self.pc, self.regs)
     }
 }
 
@@ -120,6 +121,34 @@ impl State {
         }
     }
 
+    fn nequ(&mut self, reg_st: u8, reg_a: u8, reg_b: u8) {
+        self.regs[reg_st as usize] = (self.regs[reg_a as usize] != self.regs[reg_b as usize]) as u16;
+    }
+
+    fn jr(&mut self, addrh: u8, addrl: u8, reg_a: u8) {
+        unimplemented!();
+    }
+
+    fn jrc(&mut self, addrh: u8, addrl: u8, reg_a: u8) {
+        unimplemented!();
+    }
+
+    fn and(&mut self, reg_st: u8, reg_a: u8, reg_b: u8) {
+        self.regs[reg_st as usize] = self.regs[reg_a as usize] & self.regs[reg_b as usize];
+    }
+
+    fn or(&mut self, reg_st: u8, reg_a: u8, reg_b: u8) {
+        self.regs[reg_st as usize] = self.regs[reg_a as usize] | self.regs[reg_b as usize];
+    }
+
+    fn xor(&mut self, reg_st: u8, reg_a: u8, reg_b: u8) {
+        self.regs[reg_st as usize] = self.regs[reg_a as usize] ^ self.regs[reg_b as usize];
+    }
+
+    fn not(&mut self, reg_st: u8, reg_a: u8, _: u8) {
+        self.regs[reg_st as usize] = !self.regs[reg_a as usize]
+    }
+
 }
 
 fn main() {
@@ -136,10 +165,10 @@ fn main() {
     let mut state = State::new(bin);
     
     loop {
-        info!("{:?}", &state);
+        println!("{:?}", state);
         match state.tick() {
             Ok(()) => {}
-            Err(err) => {info!("{}", err); break;}
+            Err(err) => {println!("{}", err); break;}
         }
     }
 }
